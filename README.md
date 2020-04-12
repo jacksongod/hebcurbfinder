@@ -16,9 +16,9 @@ Given one or more keywords for intended HEB stores and phone number , the script
 4. (optional) open Safari and log into your HEB account 
 5. Open hebcurbside.scpt in _Script Editor_ and Hit run button and follow prompts to enter Store search keywords and phone number.
 
-6. Turn up the volume to hear the notification when a slot is found. A message will be sent to the phone number provided. Once slot found, you will need to reserve the slot yourself, and checkout with in 1 hour(as of now). I do not do auto reserve from script because it is bad for other people who really needs the slot. 
-7. Script will stop once any slots are found from store(s)
+6. Turn up the volume to hear the notification when a slot is found, or a message will be sent to the phone number provided. Once curbside slot found, you will need to reserve the slot yourself, and checkout with in 1 hour(as of now). No auto-reservation provided from script for avoiding potential abuse.
 
+7. Script will stop once any slots(either free or with fee) are found from any of the store(s) searched
 
 
 Notes:
