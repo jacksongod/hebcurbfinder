@@ -11,7 +11,7 @@ Given one or more keywords for intended HEB stores and phone number , the script
 
 ## Instructions
 1. The script only works for HEB Curbside pick up so far, not support for delivery slot(yet)
-2. Download 'hebcurbside.scpt' or git clone.
+2. Download 'hebcurbside.scpt' [here](https://github.com/jacksongod/hebcurbfinder/raw/master/hebcurbside.scpt) or git clone.
 3. Enable "Allow JavaScript from Apple Events". [How-to video](https://www.youtube.com/watch?v=S6zb_6yTAbo)
 4. (optional) open Safari and log into your HEB account 
 5. Open hebcurbside.scpt in _Script Editor_ and modify <code>property searchKeyList : {"kyle", "victoria"} </code>  at the top. This is a list of keywords that input to HEB search bar to find stores. Add closest keywords of your closest store names / intended store names such that the store will appear as the first item in search results(You can try the keywords on heb.com first). The script will only select the first store from each keyword entered. 
