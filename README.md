@@ -13,10 +13,10 @@ Given one or more keywords for intended HEB stores and phone number , the script
 1. The script only works for HEB Curbside pick up so far, not support for delivery slot(yet)
 2. Download 'hebcurbside.scpt' [here](https://github.com/jacksongod/hebcurbfinder/raw/master/hebcurbside.scpt) or git clone.
 3. Enable "Allow JavaScript from Apple Events". [How-to video](https://www.youtube.com/watch?v=S6zb_6yTAbo)
-4. (optional) open Safari and log into your HEB account 
+4. (Recommended)Open Safari and SIGN OUT your HEB account. There is a known problem that if you already logged in and there are something in the cart, while switching to different store, some items in cart might be unavailable in that store and get removed / error pops up that blocks script. 
 5. Open hebcurbside.scpt in _Script Editor_ and Hit run button and follow prompts to enter Store search keywords and phone number.
 
-6. Turn up the volume to hear the notification when a slot is found, or a message will be sent to the phone number provided. Once curbside slot found, you will need to reserve the slot yourself, and checkout with in 1 hour(as of now). No auto-reservation provided from script for avoiding potential abuse.
+6. Turn up the volume to hear the notification when a slot is found, or a message will be sent to the phone number provided. Once curbside slot found, you will need to reserve the slot yourself(sign in first), and checkout with in 1 hour(as of now). No auto-reservation provided from script for avoiding potential abuse.
 
 7. Script will stop once any slots(either free or with fee) are found from any of the store(s) searched
 
