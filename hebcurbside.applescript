@@ -1,13 +1,61 @@
 property searchKeyList : {"kyle", "escarpment","buda","manchaca","William Cannon"}
 property slot_site_url : "https://www.heb.com"
+property  phone_num : "123456789"
 
-
-global phone_num
 global current_store
 global window_avail
 global daydate
 global dayofweek
 global found_slot
+
+
+on checkDisabledbyClass(theClassName, elementnum, tab_num, window_id)
+	tell application "Safari"
+		return do JavaScript "document.getElementsByClassName('" & theClassName & "')[" & elementnum & "].disabled;" in tab tab_num of window id window_id
+	end tell
+end checkDisabledbyClass
+
+-- on checkDisplaybyClass(theClassName, elementnum, tab_num, window_id)
+-- 	tell application "Safari"
+-- 		return do JavaScript "document.getElementsByClassName('" & theClassName & "')[" & elementnum & "].style.display;" in tab tab_num of window id window_id
+-- 	end tell
+-- end checkDisplaybyClass
+
+on checkIDExist(theID, tab_num,window_id)
+	tell application "Safari"
+		set exist to do JavaScript "var x = document.getElementById('" & theID & "');(x!=null);" in tab tab_num of window id window_id
+	end tell
+	return exist 
+end checkIDExist
+
+on checkDisplaybyClass(theClassName, elementnum, tab_num, window_id)
+	tell application "Safari"
+		return do JavaScript "var x = document.getElementsByClassName('" & theClassName & "')[" & elementnum & "];
+		                       window.getComputedStyle(x).display" in tab tab_num of window id window_id
+	end tell
+end checkDisplaybyClass
+
+on checkDisplaybyId(theID, tab_num, window_id)
+	tell application "Safari"
+		return do JavaScript "var x = document.getElementById('" & theID & "');
+		                       window.getComputedStyle(x).display" in tab tab_num of window id window_id
+	end tell
+end checkDisplaybyId
+
+on clickDivClassName(divId, buttonClassName, elementnum, tab_num, window_id)
+	tell application "Safari"
+		do JavaScript "var x = document.getElementById('" & divId & "'); 
+		         x.getElementsByClassName('" & buttonClassName & "')[" & elementnum & "].click();" in tab tab_num of window id window_id
+		delay 0.5
+	end tell
+end clickDivClassName
+
+on checkClassLen(theClassName, tab_num, window_id)
+	tell application "Safari"
+		return do JavaScript "document.getElementsByClassName('" & theClassName & "').length;" in tab tab_num of window id window_id
+	end tell
+end checkClassLen
+
 
 on clickClassName(theClassName, elementnum, tab_num, window_id)
 	tell application "Safari"
@@ -60,7 +108,7 @@ on toCurbsidePage(heb_win_id)
 end toCurbside
 
 on getPhoneNumber()
-	set theResponse to display dialog "Enter Phone number: " default answer "" with icon note buttons {"Cancel", "Continue"} default button "Continue" with title "Recipient Phone Number"
+	set theResponse to display dialog "Enter Phone number: " default answer phone_num with icon note buttons {"Cancel", "Continue"} default button "Continue" with title "Recipient Phone Number"
 	if button returned of theResponse = "Continue" then
 		set temp to text returned of theResponse
 		-- checks if proper format entered
@@ -99,6 +147,25 @@ end if
 end getKeywordsList
 
 
+on checkReviewChanges(tab_num, window_id)
+	set deletedItems to {}
+	if checkDisplaybyId("cart-change-warning-modal", tab_num,window_id) is not "none" then 
+		tell application "Safari"
+			set cartUnavailCount to do JavaScript "document.getElementsByClassName(\"cart-table__row--is-removing\").length;" in tab tab_num of window id window_id
+			repeat with itemIterator from 0 to cartUnavailCount - 1	
+				set end of deletedItems to (do JavaScript "document.getElementsByClassName(\"cart-table__name\")[" & itemIterator & "].textContent;" in tab tab_num of window id window_id)
+			end repeat
+		my clickDivClassName("cart-change-warning-modal___BV_modal_footer_", "btn-primary", 0, tab_num, window_id)
+		delay 3
+		end tell
+	end if
+	set Applescript's text item delimiters to ","
+	log "Following items will be deleted from cart: " & (deletedItems as string)
+	return deletedItems
+end checkReviewChanges
+
+
+
 script main
 	set found_slot to false
 	set heb_win_id to false
@@ -118,6 +185,12 @@ script main
 			delay 3
 			clickClassName("store__select-button", 0, -1, heb_win_id)
 			delay 3
+			-- log checkDisabledbyClass("picker-day__scroll--prev", 0,-1,heb_win_id)
+			-- log checkDisabledbyClass("picker-day__scroll--next", 0,-1,heb_win_id)
+			-- log checkClassLen("picker-day__button",-1,heb_win_id )
+			-- log checkDisplaybyClass("picker-day__no-slots-available", 3,-1,heb_win_id )
+			-- log checkDisplaybyClass("picker-day__no-slots-available", 0,-1,heb_win_id )
+			set deletedItems to checkReviewChanges(-1, heb_win_id)
 			tell application "Safari"
 				set current_store to do JavaScript "addr_pickerbox = document.getElementsByClassName(\"address-picker\")[0]; addr_pickerbox.getElementsByClassName(\"store-card__name\")[0].textContent;" in tab -1 of window id heb_win_id
 				set window_avail to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section.getElementsByClassName(\"picker-time\").length;" in tab -1 of window id heb_win_id
@@ -144,7 +217,7 @@ script main
 			end if
 			delay 2
 		end repeat
-	--	set found_slot to true
+		-- set found_slot to true
 		if not found_slot then
 			set wait_time to 180
 			log "wait for " & wait_time & "s"
