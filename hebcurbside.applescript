@@ -1,6 +1,7 @@
 property searchKeyList : {"kyle", "escarpment","buda","manchaca","William Cannon"}
 property slot_site_url : "https://www.heb.com"
-property  phone_num : "123456789"
+property phone_num : "123456789"
+property freeOnlySlots : false
 
 global current_store
 global window_avail
@@ -121,7 +122,7 @@ on getPhoneNumber()
 			-- user will be reprompted for number
 		end if
 	end if
-	return phoneNumber
+	set phone_num to phoneNumber
 end getPhoneNumber
 
 on getKeywordsList()
@@ -146,6 +147,16 @@ on getKeywordsList()
 end if 
 end getKeywordsList
 
+on getFreeOrAny()
+	set dialogString to "Choose to search only for free slots or any slots (Free or with fee. HEB releases some slots for a $4.95 fee with closer date)"
+	display dialog dialogString buttons {"Cancel", "Free Only Slots", "Any Slots"} default button "Any Slots" with title "Free or Any" with icon note
+	if result = {button returned:"Free Only Slots"} then
+		set freeOnlySlots to true
+	else if result = {button returned:"Any Slots"} then
+		set freeOnlySlots to false
+	end if
+end getFreeOrAny
+
 
 on checkReviewChanges(tab_num, window_id)
 	set deletedItems to {}
@@ -155,8 +166,8 @@ on checkReviewChanges(tab_num, window_id)
 			repeat with itemIterator from 0 to cartUnavailCount - 1	
 				set end of deletedItems to (do JavaScript "document.getElementsByClassName(\"cart-table__name\")[" & itemIterator & "].textContent;" in tab tab_num of window id window_id)
 			end repeat
-		my clickDivClassName("cart-change-warning-modal___BV_modal_footer_", "btn-primary", 0, tab_num, window_id)
-		delay 3
+			my clickDivClassName("cart-change-warning-modal___BV_modal_footer_", "btn-primary", 0, tab_num, window_id)
+			delay 3
 		end tell
 	end if
 	set Applescript's text item delimiters to ","
@@ -164,14 +175,51 @@ on checkReviewChanges(tab_num, window_id)
 	return deletedItems
 end checkReviewChanges
 
+on findSelectedIdx(tab_num,window_id)
+	tell application "Safari"
+		return do JavaScript "var day_array = document.getElementsByClassName(\"picker-day__button\");
+							 var returnIdx = 0; 
+							 for (var i = 0; i< day_array.length; i++){
+								 if (day_array[i].classList.contains(\"picker-day__button--selected\")) {
+									returnIdx = i;
+									break; 
+								 }
+							 }
+							 returnIdx; " in tab tab_num of window id window_id
+	end tell
+end findSelectedIdx
+
+on findNextFreeDay(tab_num, window_id)
+	set foundDay to false
+	set currentIdx to findSelectedIdx(tab_num, window_id)
+	repeat 
+		repeat with idx from currentIdx+1 to 4   -- 5 days in one screen 
+			set slotFull to checkDisplaybyClass("picker-day__no-slots-available", idx, tab_num, window_id)
+			set free to checkDisplaybyClass("picker-day__fee", idx, tab_num, window_id)
+			if (slotFull = "none") and (free is not "none") then
+				clickClassName("picker-day__button", idx, tab_num, window_id)
+				delay 1
+				return idx
+			end if 
+		end repeat
+		if checkDisabledbyClass("picker-day__scroll--next", 0, tab_num,window_id) then
+			exit repeat
+		end if 
+		clickClassName("picker-day__scroll--next", 0, tab_num, window_id)
+		delay 1
+		set currentIdx to -1
+	end repeat
+	return -1
+end findNextFreeDay
 
 
 script main
 	set found_slot to false
 	set heb_win_id to false
 	getKeywordsList()
-	set phone_num to getPhoneNumber()
-
+	getPhoneNumber()
+	getFreeOrAny()
+	set freeString to ""
 	repeat until found_slot
 		set heb_win_id to toCurbsidePage(heb_win_id)
 		repeat with keyword in searchKeyList
@@ -190,16 +238,30 @@ script main
 			-- log checkClassLen("picker-day__button",-1,heb_win_id )
 			-- log checkDisplaybyClass("picker-day__no-slots-available", 3,-1,heb_win_id )
 			-- log checkDisplaybyClass("picker-day__no-slots-available", 0,-1,heb_win_id )
+
 			set deletedItems to checkReviewChanges(-1, heb_win_id)
+
 			tell application "Safari"
 				set current_store to do JavaScript "addr_pickerbox = document.getElementsByClassName(\"address-picker\")[0]; addr_pickerbox.getElementsByClassName(\"store-card__name\")[0].textContent;" in tab -1 of window id heb_win_id
 				set window_avail to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section.getElementsByClassName(\"picker-time\").length;" in tab -1 of window id heb_win_id
 				if window_avail >= 1 then
-					--set daydate to do JavaScript "try{section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section = section.getElementsByClassName(\"day-selected\")[0]; return_var= section.getElementsByClassName(\"picker-day__date\")[0].textContent.trim();}catch(err){return_var=err}return_var" in tab -1 of window id heb_win_id
-					--set dayofweek to do JavaScript "try{section = document.getEleentsByClassName(\"timeslot-modal-form-body\")[0]; section = section.getElementsByClassName(\"day-selected\")[0]; return_var=section.getElementsByClassName(\"picker-day__of-week\")[0].textContent.trim();}catch(err){return_var=err}return_var" in tab -1 of window id heb_win_id
-					set daydate to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section = section.getElementsByClassName(\"day-selected\")[0]; section.getElementsByClassName('picker-day__date')[0].textContent.trim();" in tab -1 of window id heb_win_id
-					set dayofweek to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section = section.getElementsByClassName(\"day-selected\")[0]; section.getElementsByClassName('picker-day__of-week')[0].textContent.trim();" in tab -1 of window id heb_win_id
-					delay 0.5
+					if freeOnlySlots then 
+						set freeString to "free "
+						set is_current_slot_free to do JavaScript "document.getElementsByClassName(\"picker-time__fee-amount\")[0].textContent.toLowerCase()== 'free';" in tab -1 of window id heb_win_id
+						if not is_current_slot_free then 
+							log "current selected day is not free"
+							set dayIdx to my findNextFreeDay(-1, heb_win_id)
+							log "day " & dayIdx & " is free"
+							set window_avail to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section.getElementsByClassName(\"picker-time\").length;" in tab -1 of window id heb_win_id
+						end if 
+					end if 
+					-- Get the current selected date info
+					set daydate to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; 
+					                              section = section.getElementsByClassName(\"day-selected\")[0]; 
+												  section.getElementsByClassName('picker-day__date')[0].textContent.trim();" in tab -1 of window id heb_win_id
+					set dayofweek to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; 
+					                               section = section.getElementsByClassName(\"day-selected\")[0]; 
+												section.getElementsByClassName('picker-day__of-week')[0].textContent.trim();" in tab -1 of window id heb_win_id
 				end if
 			end tell
 			log current_store
@@ -208,12 +270,11 @@ script main
 			if window_avail >= 1 then
 				log daydate
 				log dayofweek
-				set txtBody to "Found curbside slot at store " & current_store & " on " & daydate & " " & dayofweek
+				set txtBody to "Found curbside " & freeString & " slot at store " & current_store & " on " & daydate & " " & dayofweek
 				sendMessages(phone_num, txtBody)
 				log "message sent for " & txtBody
-				say "Curbside slot found at store " & current_store & " on " & daydate & " " & dayofweek
+				say "Curbside " & freeString & "slot found at store " & current_store & " on " & daydate & " " & dayofweek
 				set found_slot to true
-				
 			end if
 			delay 2
 		end repeat
