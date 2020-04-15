@@ -2,7 +2,7 @@
 A Mac only Apple script to help find HEB Curbside slot. [H-E-B](https://www.heb.com) is an American privately held supermarket chain based in San Antonio, Texas. 
 
 ## How it works
-Given one or more keywords for intended HEB stores and phone number, the script will drive safari and continuously/periodically pull for the next avaible slots(free or not) from heb.com. Once found, notify user by sending voice notification and messages to given phone number. 
+Given one or more keywords for intended HEB stores and phone number, the script will drive safari and continuously/periodically pull for the next avaible slots(choose free or any) from heb.com. Once found, notify user by sending voice notification and messages to given phone number. 
 
 ## Requirements 
 - MacOS system.
@@ -15,11 +15,11 @@ Given one or more keywords for intended HEB stores and phone number, the script 
 3. Enable "Allow JavaScript from Apple Events". [How-to video](https://www.youtube.com/watch?v=S6zb_6yTAbo)
 4. (Recommended) Open Safari and SIGN OUT your HEB account. There is a known issue that if you are already logged in and there are something in the cart, while switching to different store, some items in the cart might be unavailable in that store and get removed. 
 
-5. Open hebcurbside.scpt in _Script Editor_ and Hit run button and follow prompts to enter Store search keywords and phone number.
+5. Open hebcurbside.scpt in _Script Editor_ and Hit run button and follow prompts to enter Store search keywords, phone number, and choose between free slot or any slot.
 
 6. Turn up the volume to hear the notification when a slot is found, or a message will be sent to the phone number provided. Once curbside slot found, you will need to reserve the slot yourself(sign in first), and checkout with in 1 hour(as of now). No auto-reservation provided from script for avoiding potential abuse.
 
-7. Script will stop once any slots(either free or with fee) are found from any of the store(s) searched
+7. Script will stop once slot are found from any of the store(s) searched
 
 
 Notes:
