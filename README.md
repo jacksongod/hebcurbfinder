@@ -2,7 +2,7 @@
 A Mac only Apple script to help find HEB Curbside slot. [H-E-B](https://www.heb.com) is an American privately held supermarket chain based in San Antonio, Texas. 
 
 ## How it works
-Given one or more keywords for intended HEB stores and phone number , the script will driver safari and continuely pulling for the next avaible slots(free or not) from heb.com and notify user by sending voice notification and messages to given phone number. 
+Given one or more keywords for intended HEB stores and phone number, the script will drive safari and continuously/periodically pull for the next avaible slots(free or not) from heb.com. Once found, notify user by sending voice notification and messages to given phone number. 
 
 ## Requirements 
 - MacOS system.
