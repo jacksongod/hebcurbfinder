@@ -171,7 +171,9 @@ on checkReviewChanges(tab_num, window_id)
 		end tell
 	end if
 	set Applescript's text item delimiters to ","
-	log "Following items will be deleted from cart: " & (deletedItems as string)
+	if count of deletedItems > 0 then
+		log "Following items will be deleted from cart: " & (deletedItems as string)
+	end if 
 	return deletedItems
 end checkReviewChanges
 
@@ -251,8 +253,13 @@ script main
 						if not is_current_slot_free then 
 							log "current selected day is not free"
 							set dayIdx to my findNextFreeDay(-1, heb_win_id)
-							log "day " & dayIdx & " is free"
-							set window_avail to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section.getElementsByClassName(\"picker-time\").length;" in tab -1 of window id heb_win_id
+							if dayIdx = -1 then
+								log "no day is free so far"
+								set window_avail to 0
+							else 
+								log "day " & dayIdx & " is free"
+								set window_avail to do JavaScript "section = document.getElementsByClassName(\"timeslot-modal-form-body\")[0]; section.getElementsByClassName(\"picker-time\").length;" in tab -1 of window id heb_win_id
+							end if
 						end if 
 					end if 
 					-- Get the current selected date info
